@@ -30,19 +30,36 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
+      - name: Extract metadata (tags, labels) for Worker Docker
+        id: meta_worker
         uses: docker/metadata-action@v4.4.0
         with:
-          images: ${{ secrets.DOCKER_IMAGE_NAME }}
+          images: eltorio/airbyte-worker
 
-      - name: Build and push Docker image
+      - name: Build and push Worker Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: "worker"
           platforms: linux/arm64, linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta_worker.outputs.tags }}
+          labels: ${{ steps.meta_worker.outputs.labels }}
+
+      - name: Extract metadata (tags, labels) for Container Orchestrator Docker
+        id: meta_container_orchestrator
+        uses: docker/metadata-action@v4.4.0
+        with:
+          images: eltorio/airbyte-container-orchestrator
+  
+      - name: Build and push Container Orchestrator Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: "container-orchestrator"
+          platforms: linux/arm64, linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ steps.meta_container_orchestrator.outputs.tags }}
+          labels: ${{ steps.meta_container_orchestrator.outputs.labels }}
